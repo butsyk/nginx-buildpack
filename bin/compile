@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+set -e
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+echo '-----> nginx-buildpack: build_dir'
+echo $BUILD_DIR
+
+mkdir -p $BUILD_DIR/bin
+cp "bin/nginx-$STACK" $BUILD_DIR/bin/nginx
+chmod +x $BUILD_DIR/bin/nginx
+
+nginx_version=$(./bin/nginx-$STACK -V 2>&1 | head -1 | awk '{ print $NF }')
+echo "-----> nginx-buildpack: Installed ${nginx_version} to app/bin"
+cp bin/start-nginx $BUILD_DIR/bin/
+echo '-----> nginx-buildpack: Added start-nginx to app/bin'
+
+mkdir -p $BUILD_DIR/config
+
+cp config/mime.types $BUILD_DIR/config/
+echo '-----> nginx-buildpack: Default mime.types copied to config/'
+
+cp config/nginx.conf.erb $BUILD_DIR/config/
+cp config/nginx.conf $BUILD_DIR/config/
+echo '-----> nginx-buildpack: Default config copied to config/'
+
+mkdir -p $BUILD_DIR/logs/nginx
+#mkdir -p $BUILD_DIR/cache/nginx/proxy_temp
+
+touch $BUILD_DIR/logs/nginx/access.log
+touch $BUILD_DIR/logs/nginx/error.log
+
+exit 0
