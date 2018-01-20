@@ -1,10 +1,12 @@
+
 types {
     text/html                             html htm shtml;
     text/css                              css;
     text/xml                              xml;
+    text/cache-manifest                   manifest appcache;
     image/gif                             gif;
     image/jpeg                            jpeg jpg;
-    application/javascript                js;
+    application/x-javascript              js;
     application/atom+xml                  atom;
     application/rss+xml                   rss;
 
@@ -60,6 +62,7 @@ types {
     application/octet-stream              bin exe dll;
     application/octet-stream              deb;
     application/octet-stream              dmg;
+    application/octet-stream              eot;
     application/octet-stream              iso img;
     application/octet-stream              msi msp msm;
 
@@ -70,7 +73,6 @@ types {
     audio/midi                            mid midi kar;
     audio/mpeg                            mp3;
     audio/ogg                             ogg;
-    audio/x-m4a                           m4a;
     audio/x-realaudio                     ra;
 
     video/3gpp                            3gpp 3gp;

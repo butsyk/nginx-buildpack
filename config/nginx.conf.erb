@@ -1,8 +1,7 @@
 daemon off;
-worker_processes auto;
-
-# error acces /var/log
-error_log /dev/stdout info;
+worker_processes <%= ENV['NGINX_WORKERS'] %>;
+pid /app/nginx.pid;
+error_log stderr;
 
 events {
     use epoll;
@@ -11,49 +10,38 @@ events {
 }
 
 http {
+    <% if ENV['NGINX_GZIP_ENABLED'] == '1' %>
     gzip on;
-    gzip_comp_level 2;
+    gzip_disable msie6;
     gzip_min_length 512;
+    gzip_proxied <%= ENV['NGINX_GZIP_PROXIED'] %>;
+    gzip_types <%= ENV['NGINX_GZIP_TYPES'] %>;
+    <% end %>
 
     server_tokens off;
 
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    # types_hash_max_size 2048;
-
-    client_body_temp_path /tmp/client_temp 1 2;
-
     log_format l2met 'measure#nginx.service=$request_time request_id=$http_x_request_id';
-
-    # access_log /app/logs/nginx/access.log l2met;
-    # error_log /app/logs/nginx/error.log;
-    access_log /dev/stdout;
+    access_log error l2met;
 
     include mime.types;
     default_type application/octet-stream;
+    sendfile on;
 
-    # Must read the body in 5 seconds.
-    client_body_timeout <%= ENV['NGINX_CLIENT_BODY_TIMEOUT'] || 5 %>;
-
-    map $http_upgrade $connection_upgrade {
-        default upgrade;
-        '' close;
-    }
+    # Increase default upload size from 1M to allow uploading larger images.
+    client_max_body_size 100M;
 
     upstream websocket {
-        server unix:/tmp/daphne.sock fail_timeout=0;
+        server <%= ENV['NGINX_DAPHNE_SOCKET'] %> fail_timeout=0;
     }
 
     upstream app_server {
-        server unix:/tmp/nginx.socket fail_timeout=0;
+        server <%= ENV['NGINX_SOCKET'] %> fail_timeout=0;
     }
 
     server {
-        listen <%= ENV["PORT"] || 80 %>;
+        listen <%= ENV['NGINX_LISTEN'] %>;
         server_name _;
         keepalive_timeout 5;
-        client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 64 %>M;
 
         location / {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -91,6 +79,9 @@ http {
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
         }
-    }
-}
 
+    }
+
+    # relative to location of nginx.conf
+    include nginx-local*.conf;
+}
