@@ -27,12 +27,12 @@ http {
     default_type application/octet-stream;
     sendfile on;
 
-    # Increase default upload size from 1M to allow uploading larger images.
+    # Increase default upload size from 100M to allow uploading larger images.
     client_max_body_size 100M;
 
-    upstream websocket {
-        server <%= ENV['NGINX_DAPHNE_SOCKET'] %> fail_timeout=0;
-    }
+    # upstream websocket {
+    #     server <%= ENV['NGINX_DAPHNE_SOCKET'] %> fail_timeout=0;
+    # }
 
     upstream app_server {
         server <%= ENV['NGINX_SOCKET'] %> fail_timeout=0;
@@ -73,12 +73,12 @@ http {
                 autoindex off;
         }
 
-        location /ws/ {
-            proxy_pass http://websocket;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $connection_upgrade;
-        }
+        # location /ws/ {
+        #    proxy_pass http://websocket;
+        #    proxy_http_version 1.1;
+        #    proxy_set_header Upgrade $http_upgrade;
+        #    proxy_set_header Connection $connection_upgrade;
+        # }
 
     }
 
